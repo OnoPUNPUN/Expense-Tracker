@@ -1,9 +1,9 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import prisma from "../config/prismaClinet.js";
+import prisma from "../../config/prismaClinet.js";
 import { saveOTP, getOTP, deleteOTP } from "./otp.service.js";
 import { sendOTPEmail } from "./email.service.js";
-import { generateOTP } from "../utils/generateOtp.js";
+import { generateOTP } from "../../utils/generateOtp.js";
 
 export const registerUser = async ({
     username,

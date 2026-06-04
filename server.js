@@ -3,6 +3,8 @@ import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import redisClient from "./src/config/redisClinet.js";
 import authRouter from "./src/routes/auth.routes.js"
+import expenseRouter from "./src/routes/expense.routes.js";
+import authMiddleware from "./src/middleware/authMiddleware.js";
 
 
 const app = express();
@@ -23,6 +25,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/auth", authRouter);
+app.use("/expense", authMiddleware, expenseRouter);
 
 app.listen(PORT, () => {
     console.log(`Server has Started on http://localhost:${PORT}`);

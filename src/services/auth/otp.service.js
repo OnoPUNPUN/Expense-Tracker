@@ -1,4 +1,4 @@
-import redisClient from "../config/redisClinet.js";
+import redisClient from "../../config/redisClinet.js";
 
 export const saveOTP = async (email, otp) => {
     await redisClient.set(
