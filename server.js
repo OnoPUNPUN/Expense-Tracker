@@ -1,7 +1,8 @@
 import express from "express";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
-import redisClient from "./src/config/redisClinet";
+import redisClient from "./src/config/redisClinet.js";
+import authRouter from "./src/routes/auth.routes.js"
 
 
 const app = express();
@@ -12,9 +13,17 @@ const __fileName = fileURLToPath(import.meta.url);
 const __dirName = dirname(__fileName);
 
 
-app.use("/", (req, res) => {
+app.use(express.json());
+
+app.get("/", (req, res) => {
     res.json({
         status: "OK",
-        service: "Dev Blog API"
+        service: "ExpenseEase Server Running"
     });
+});
+
+app.use("/auth", authRouter);
+
+app.listen(PORT, () => {
+    console.log(`Server has Started on http://localhost:${PORT}`);
 });
