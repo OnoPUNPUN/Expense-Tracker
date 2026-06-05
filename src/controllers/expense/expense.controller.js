@@ -15,3 +15,25 @@ export const createExpense = async (req, res) => {
         });
     }
 };
+
+export const updateExpense = async (req, res, next) => {
+    try {
+        
+
+        const updatedExpense = await expenseService.updateExpense(
+            req.params.id, 
+            req.userId, 
+            req.body
+        );
+
+        return res.status(200).json({
+            message: "Expense updated successfully",
+        })
+
+    } catch (err) {
+        console.error("Error While Updating the Expense: ", err);
+        res.status(err.message || 500).json({
+            message: err.message || "Failed to Update Expense"
+        });
+    }
+}
