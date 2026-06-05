@@ -6,8 +6,6 @@ const createError = (message, statusCode = 400) => {
     return error;
 };
 
-const transactionTypes = ["INCOME", "EXPENSE"];
-
 export const createExpense = async (userId, data) => {
     if (!userId) {
         throw createError("Unauthorized", 401);
@@ -51,6 +49,26 @@ export const createExpense = async (userId, data) => {
     return expense;
 };
 
+export const getAllExpenses = async (userId) => {
+    if (!userId) {
+        throw createError("Unauthorized", 401);
+    }
+
+    const expenses = await prisma.expense.findMany({
+        where: {
+            userId
+        },
+        include: {
+            category: true
+        },
+        orderBy: {
+            createdAt: "desc"
+        }
+    });
+
+    return expenses;
+};
+
 export const updateExpense = async (expenseId, userId, data) => {
     if (!userId) {
         throw createError("Unauthorized", 401);
@@ -65,19 +83,27 @@ export const updateExpense = async (expenseId, userId, data) => {
         }
     });
 
-    if(!expense) {
+    if (!expense) {
         throw createError("Expense not found", 404);
     };
 
-    if(expense.userId !== userId) {
-        throw createError("User not valid", 404);
+    if (expense.userId !== userId) {
+        throw createError("Forbidden", 403);
     };
 
-    const amountNumber = Number(data.amount);
-    const categoryIdNumber = Number(data.categoryId);
+    const updateData = {
+        title: data.title,
+        type: data.type,
+        description: data.description
+    };
 
+    if (data.amount !== undefined) {
+        updateData.amount = Number(data.amount);
+    }
 
     if (data.categoryId !== undefined) {
+        const categoryIdNumber = Number(data.categoryId);
+
         const category = await prisma.category.findUnique({
             where: {
                 id: categoryIdNumber
@@ -87,19 +113,15 @@ export const updateExpense = async (expenseId, userId, data) => {
         if (!category) {
             throw createError("Category not found", 404);
         }
+
+        updateData.categoryId = categoryIdNumber;
     }
 
     const updatedExpense = await prisma.expense.update({
         where: {
             id: expenseIdNumber
         },
-        data: {
-            title: data.title,
-            amount: data.amount == amountNumber,
-            type: data.type,
-            description: data.description,
-            categoryId: data.categoryId == categoryIdNumber
-        },
+        data: updateData,
         include: {
             category: true
         }
@@ -107,3 +129,34 @@ export const updateExpense = async (expenseId, userId, data) => {
 
     return updatedExpense;
 };
+
+export const deleteExpense = async (expenseId, userId) => {
+    if (!userId) {
+        throw createError("Unauthorized", 401);
+    }
+
+    const expenseIdNumber = Number(expenseId);
+
+
+    const expense = await prisma.expense.findUnique({
+        where: {
+            id: expenseIdNumber
+        }
+    });
+
+    if (!expense) {
+        throw createError("Expense not found", 404);
+    };
+
+    if (expense.userId !== userId) {
+        throw createError("Forbidden", 403);
+    };
+
+    await prisma.expense.delete({
+        where: {
+            id: expenseIdNumber
+        }
+    });
+
+
+}
