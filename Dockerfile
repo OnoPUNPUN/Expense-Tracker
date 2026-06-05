@@ -14,7 +14,6 @@ COPY prisma.config.ts ./
 RUN npx prisma generate
 
 COPY server.js ./
-COPY public ./public
 COPY src ./src
 
 EXPOSE 5003
