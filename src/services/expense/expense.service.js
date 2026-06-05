@@ -146,14 +146,11 @@ export const getAllExpenses = async (userId, filters = {}) => {
 
     return {
         data: expenses,
-        pagination: {
-            page,
-            limit,
-            totalExpenses,
-            totalPages: Math.ceil(totalExpenses / limit),
-            hasNextPage: page * limit < totalExpenses,
-            hasPreviousPage: page > 1
-        }
+        total: totalExpenses,
+        first_page: page > 1 ? 1 : null,
+        previous: page > 1 ? page - 1 : null,
+        next: page * limit < totalExpenses ? page + 1 : null,
+        last_page: Math.ceil(totalExpenses / limit)
     };
 };
 
