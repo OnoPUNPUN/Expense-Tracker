@@ -1,4 +1,5 @@
 import * as profileService from "../../services/profile/profile.service.js";
+import { uploadToCloudinary } from "../../config/cloudinary.js";
 
 export const getUserProfile = async (req, res) => {
     try {
@@ -17,9 +18,16 @@ export const getUserProfile = async (req, res) => {
 
 export const updateUserProfile = async (req, res) => {
     try {
+        const updateData = req.body;
+
+        if (req.file) {
+            const result = await uploadToCloudinary(req.file);
+            updateData.avatarUrl = result.secure_url;
+        }
+
         const updatedUser = await profileService.updateUserProfile(
             req.userId,
-            req.body
+            updateData
         );
 
         return res.status(200).json({

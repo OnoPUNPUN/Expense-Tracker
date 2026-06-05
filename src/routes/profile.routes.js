@@ -1,4 +1,5 @@
 import express from "express";
+import upload from "../middleware/uploadMiddleware.js";
 
 import {
     getUserProfile,
@@ -8,6 +9,6 @@ import {
 const router = express.Router();
 
 router.get("/", getUserProfile);
-router.put("/", updateUserProfile);
+router.put("/", upload.single("image"), updateUserProfile);
 
 export default router;
