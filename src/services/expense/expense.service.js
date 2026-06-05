@@ -51,6 +51,25 @@ const getDateFilter = ({ days, startDate, endDate }) => {
     };
 };
 
+const getPagination = ({ page = 1, limit = 10 }) => {
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+
+    if (!Number.isInteger(pageNumber) || pageNumber <= 0) {
+        throw createError("Invalid page", 400);
+    }
+
+    if (!Number.isInteger(limitNumber) || limitNumber <= 0) {
+        throw createError("Invalid limit", 400);
+    }
+
+    return {
+        page: pageNumber,
+        limit: limitNumber,
+        skip: (pageNumber - 1) * limitNumber
+    };
+};
+
 export const createExpense = async (userId, data) => {
     if (!userId) {
         throw createError("Unauthorized", 401);
@@ -100,23 +119,42 @@ export const getAllExpenses = async (userId, filters = {}) => {
     }
 
     const dateFilter = getDateFilter(filters);
+    const { page, limit, skip } = getPagination(filters);
+    const where = {
+        userId,
+        ...(dateFilter && {
+            createdAt: dateFilter
+        })
+    };
 
-    const expenses = await prisma.expense.findMany({
-        where: {
-            userId,
-            ...(dateFilter && {
-                createdAt: dateFilter
-            })
-        },
-        include: {
-            category: true
-        },
-        orderBy: {
-            createdAt: "desc"
+    const [expenses, totalExpenses] = await prisma.$transaction([
+        prisma.expense.findMany({
+            where,
+            include: {
+                category: true
+            },
+            orderBy: {
+                createdAt: "desc"
+            },
+            skip,
+            take: limit
+        }),
+        prisma.expense.count({
+            where
+        })
+    ]);
+
+    return {
+        data: expenses,
+        pagination: {
+            page,
+            limit,
+            totalExpenses,
+            totalPages: Math.ceil(totalExpenses / limit),
+            hasNextPage: page * limit < totalExpenses,
+            hasPreviousPage: page > 1
         }
-    });
-
-    return expenses;
+    };
 };
 
 export const updateExpense = async (expenseId, userId, data) => {
