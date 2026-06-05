@@ -6,6 +6,51 @@ const createError = (message, statusCode = 400) => {
     return error;
 };
 
+const getDateOnly = (date) => {
+    return typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date);
+};
+
+const getDateFilter = ({ days, startDate, endDate }) => {
+    if (startDate || endDate) {
+        const createdAt = {};
+
+        if (startDate) {
+            if (!getDateOnly(startDate)) {
+                throw createError("Invalid start date", 400);
+            }
+
+            createdAt.gte = new Date(`${startDate}T00:00:00.000Z`);
+        }
+
+        if (endDate) {
+            if (!getDateOnly(endDate)) {
+                throw createError("Invalid end date", 400);
+            }
+
+            createdAt.lte = new Date(`${endDate}T23:59:59.999Z`);
+        }
+
+        return createdAt;
+    }
+
+    if (days === undefined) {
+        return undefined;
+    }
+
+    const daysNumber = Number(days);
+
+    if (!Number.isInteger(daysNumber) || daysNumber <= 0) {
+        throw createError("Invalid days filter", 400);
+    }
+
+    const fromDate = new Date();
+    fromDate.setDate(fromDate.getDate() - daysNumber);
+
+    return {
+        gte: fromDate
+    };
+};
+
 export const createExpense = async (userId, data) => {
     if (!userId) {
         throw createError("Unauthorized", 401);
@@ -49,14 +94,19 @@ export const createExpense = async (userId, data) => {
     return expense;
 };
 
-export const getAllExpenses = async (userId) => {
+export const getAllExpenses = async (userId, filters = {}) => {
     if (!userId) {
         throw createError("Unauthorized", 401);
     }
 
+    const dateFilter = getDateFilter(filters);
+
     const expenses = await prisma.expense.findMany({
         where: {
-            userId
+            userId,
+            ...(dateFilter && {
+                createdAt: dateFilter
+            })
         },
         include: {
             category: true

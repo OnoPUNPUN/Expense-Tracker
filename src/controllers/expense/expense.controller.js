@@ -18,7 +18,10 @@ export const createExpense = async (req, res) => {
 
 export const getAllExpenses = async (req, res) => {
     try {
-        const expenses = await expenseService.getAllExpenses(req.userId);
+        const expenses = await expenseService.getAllExpenses(
+            req.userId,
+            req.query
+        );
 
         return res.status(200).json(expenses);
     } catch (err) {
