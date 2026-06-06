@@ -35,10 +35,13 @@ export const registerUser = async ({
     });
 
     const otp = generateOTP();
+    console.log("OTP generated");
 
     await saveOTP(email, otp);
+    console.log("OTP saved to Redis");
 
     await sendOTPEmail(email, otp);
+    console.log("Email sent");
 
     return {
         message: "OTP sent successfully",
