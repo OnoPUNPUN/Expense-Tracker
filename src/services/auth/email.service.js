@@ -10,20 +10,33 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-// Verify Brevo SMTP connection
-await transporter.verify();
-console.log("✅ Brevo SMTP Connected");
+// // Verify Brevo SMTP connection
+// try {
+//     await transporter.verify();
+//     console.log("✅ Brevo SMTP Connected");
+// } catch (error) {
+//     console.error("❌ Brevo SMTP Error:", error);
+// }
 
 export const sendOTPEmail = async (email, otp) => {
-    await transporter.sendMail({
-        from: `ExpenseEase <${process.env.BREVO_FROM_EMAIL}>`,
-        to: email,
-        subject: "Your OTP Code",
-        html: `
-            <h2>Email Verification</h2>
-            <p>Your OTP is:</p>
-            <h1>${otp}</h1>
-            <p>This code expires in 5 minutes.</p>
-        `,
-    });
+    try {
+        console.log("📧 Sending email...");
+
+        const info = await transporter.sendMail({
+            from: `ExpenseEase <${process.env.BREVO_FROM_EMAIL}>`,
+            to: email,
+            subject: "Your OTP Code",
+            html: `
+                <h2>Email Verification</h2>
+                <p>Your OTP is:</p>
+                <h1>${otp}</h1>
+                <p>This code expires in 5 minutes.</p>
+            `,
+        });
+
+        console.log("✅ Email sent:", info.messageId);
+    } catch (error) {
+        console.error("❌ SendMail Error:", error);
+        throw error;
+    }
 };
