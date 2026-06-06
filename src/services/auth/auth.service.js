@@ -2,7 +2,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "../../config/prismaClinet.js";
 import { saveOTP, getOTP, deleteOTP } from "./otp.service.js";
-import { sendOTPEmail } from "./email.service.js";
 import { generateOTP } from "../../utils/generateOtp.js";
 
 export const registerUser = async ({
@@ -40,12 +39,10 @@ export const registerUser = async ({
     await saveOTP(email, otp);
     console.log("OTP saved to Redis");
 
-    await sendOTPEmail(email, otp);
-    console.log("Email sent");
-
     return {
-        message: "OTP sent successfully",
-        email
+        message: "OTP generated successfully",
+        email,
+        otp
     };
 };
 
