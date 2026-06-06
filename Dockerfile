@@ -16,4 +16,4 @@ COPY src ./src
 
 EXPOSE 5003
 
-CMD ["node", "server.js"]
+CMD sh -c "npx prisma db push && node ./src/server.js"
